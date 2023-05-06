@@ -64,8 +64,10 @@ function App() {
 function SelfContainedUnit(params) {
 
   const [time, set_time] = useState(get_default_date());
+  const [name, set_name] = useState("My Counter");
 
-  const on_change = (d) => {
+
+  const on_date_change = (d) => {
     
     const date = new Date(
       d.target.value + 'Z',
@@ -78,19 +80,35 @@ function SelfContainedUnit(params) {
     }
   };
 
+  const on_name_change = (e) => {
+
+    set_name(e.target.value)
+
+  }
+
   const remove = () => {
     params.remove_unit(params.id);
   }
 
   return (
-    <div>
+    <div style={{ position: "relative", padding: "5px", margin: "5px", border: "1px solid black" }}>
+      <input
+        type='text'
+        value={name}
+        onChange={on_name_change}
+        style={{ border: "none", fontWeight: "bold" }}
+      />
+      <br/>
       <input 
         type='datetime-local' 
         value={format_input_time(time)}
-        onChange={on_change}
+        onChange={on_date_change}
       />
       &nbsp;
-      <button onClick={remove}>X</button>
+      <button 
+        style={{ position: "absolute", top: 0, right: 0 }} 
+        onClick={remove}
+      >X</button>
       <br/>
       <TimeLeft time={time} />
     </div>
