@@ -51,6 +51,7 @@ const TIME_UNIT = {
 function App() {
   
   const [units, set_units] = useState([]);
+  const [default_time_unit, set_default_time_unit] = useState(TIME_UNIT.DAYS);
 
   const on_time_change = (id, time) => {
     
@@ -120,7 +121,7 @@ function App() {
       id,
       name: get_default_name(),
       time: get_default_date(),
-      time_unit: TIME_UNIT.DAYS,
+      time_unit: default_time_unit,
     });
     set_units(new_state);
   }
@@ -142,13 +143,23 @@ function App() {
   };
 
   const reset = () => {
+    for (let i = 0; i < units.length; i++) {
+      deregister_callback(units[i].id);
+    }
     set_units([]);
+  }
+
+  const on_default_time_unit_change = (e) => {
+    set_default_time_unit(e.target.value);
   }
 
   return (
     <>
       <button onClick={add_units}>Add</button>
       <button onClick={reset}>Clear All</button>
+      <select value={default_time_unit} onChange={on_default_time_unit_change}>
+        <TimeUnitOptions />
+      </select>
       {render_units()}
     </>
   );
