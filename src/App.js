@@ -1,4 +1,5 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { get_default_name } from './names';
 import './App.css';
 
 let global_callbacks = [];
@@ -81,7 +82,7 @@ function App() {
     set_units(new_state);
   }
 
-  const add_units = () => {
+  const add_units = async () => {
     let new_state = [];
     for (let i = 0; i < units.length; i++) {
       new_state.push({
@@ -91,7 +92,7 @@ function App() {
     const id = Date.now();
     new_state.push({
       id,
-      name: 'My Counter',
+      name: get_default_name(),
       time: get_default_date(),
     });
     set_units(new_state);
