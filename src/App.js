@@ -356,15 +356,7 @@ function calculate_remaining_milliseconds(time) {
 
   }
 
-  const remaining_milliseconds = time.getTime() - new Date().getTime();
-
-  if (remaining_milliseconds < 0) {
-
-    return -1;
-
-  }
-
-  return remaining_milliseconds;
+  return time.getTime() - new Date().getTime();
 
 }
 
