@@ -17,7 +17,6 @@ function register_callback({ id, callback }) {
 }
 
 function deregister_callback(id) {
-  console.log(global_callbacks, id);
   global_callbacks = global_callbacks.filter((elem) => elem.id !== id);
 }
 
@@ -98,7 +97,7 @@ function App() {
     set_units(new_state);
   }
 
-  const render_units = useCallback(() => {
+  const render_units = () => {
     return units.map(
       (item) => <SelfContainedUnit
         id={item.id}
@@ -110,7 +109,7 @@ function App() {
         on_name_change={on_name_change}
       />
     );
-  }, [units]);
+  };
 
   const reset = () => {
     set_units([]);
@@ -135,16 +134,11 @@ function SelfContainedUnit(props) {
 
     if (!isNaN(date.getTime())) {
 
-      console.log('date changed', 'valid', d.target.value, date);
       props.on_time_change(
         props.id,
         date,
       );
 
-    } else {
-
-      console.log('date changed', 'invalid', d.target.value, date);
-      
     }
   };
 
@@ -190,12 +184,10 @@ function SelfContainedUnit(props) {
 
 function TimeLeft(params) {
 
-  const interval = params.interval ?? 1000;
   const [action, set_action] = useState(ACTION.PAUSE);
   const [time_left, set_time_left] = useState(
     calculate_remaining_milliseconds(params.time),
   );
-  let timer_id = useRef();
 
   const callbackRef = () => {
     set_time_left(calculate_remaining_milliseconds(params.time));
