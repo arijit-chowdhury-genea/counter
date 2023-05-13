@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { get_default_name } from './names';
+import { capitalize } from './helper';
 import './App.css';
 
 let global_callbacks = [];
@@ -37,6 +38,14 @@ const MILLISECONDS_TO_YEARS   = 1000 * 60 * 60 * 24 * (is_leap ? 366 : 355);
 const ACTION = {
   PAUSE: 'Pause',
   RESUME: 'Resume',
+};
+const TIME_UNIT = {
+  YEARS: 'YEARS',
+  // MONTHS: 'MONTHS',
+  DAYS: 'DAYS',
+  HOURS: 'HOURS',
+  SECONDS: 'SECONDS',
+  MILLISECONDS: 'MILLISECONDS',
 };
 
 function App() {
@@ -77,12 +86,29 @@ function App() {
 
   };
 
+  const on_time_unit_change = (id, time_unit) => {
+
+    set_units(
+      units.map((unit) => {
+        if (unit.id !== id) {
+          return unit;
+        } else {
+          return {
+            ...unit,
+            time_unit,
+          };
+        }
+      }),
+    );
+
+  };
+
   const remove_unit = (id) => {
     let new_state = units.filter((item) => item.id !== id);
     set_units(new_state);
   }
 
-  const add_units = async () => {
+  const add_units = () => {
     let new_state = [];
     for (let i = 0; i < units.length; i++) {
       new_state.push({
@@ -94,6 +120,7 @@ function App() {
       id,
       name: get_default_name(),
       time: get_default_date(),
+      time_unit: TIME_UNIT.DAYS,
     });
     set_units(new_state);
   }
@@ -105,9 +132,11 @@ function App() {
         key={item.id}
         name={item.name}
         time={item.time}
+        time_unit={item.time_unit}
         remove_unit={remove_unit}
         on_time_change={on_time_change}
         on_name_change={on_name_change}
+        on_time_unit_change={on_time_unit_change}
       />
     );
   };
@@ -128,7 +157,7 @@ function App() {
 
 function SelfContainedUnit(props) {
   
-  const on_date_change = (d) => {
+  const on_time_change = (d) => {
     const date = new Date(
       d.target.value + 'Z',
     );
@@ -150,7 +179,16 @@ function SelfContainedUnit(props) {
       e.target.value,
     );
 
-  }
+  };
+
+  const on_time_unit_change = (e) => {
+
+    props.on_time_unit_change(
+      props.id,
+      e.target.value,
+    );
+
+  };
 
   const remove = () => {
     props.remove_unit(props.id);
@@ -170,17 +208,42 @@ function SelfContainedUnit(props) {
       <input 
         type='datetime-local' 
         value={format_input_time(props.time)}
-        onChange={on_date_change}
+        onChange={on_time_change}
       />
+      &nbsp;
+      <select
+        value={props.time_unit}
+        onChange={on_time_unit_change}
+      >
+        <TimeUnitOptions />
+      </select>
       &nbsp;
       <button 
         onClick={remove}
       >X</button>
       <br/>
-      <TimeLeft id={props.id} time={props.time} />
+      <TimeLeft
+        id={props.id}
+        time={props.time}
+        time_unit={props.time_unit}
+      />
     </div>
   );
 
+}
+
+function TimeUnitOptions() {
+  return (
+    <>
+      {
+        Object.values(TIME_UNIT).map(
+          (option) => (
+            <option key={option} value={option}>{capitalize(option)}</option>
+          )
+        )
+      }
+    </>
+  )
 }
 
 function TimeLeft(params) {
@@ -262,10 +325,11 @@ function TimeLeft(params) {
       <button style={{ width: '80px' }} onClick={do_action}>{action}</button>
       &nbsp;
       <span>
-        {format_milliseconds(time_left, 'DAYS')} days&nbsp;
-        {format_milliseconds(time_left, 'HOURS')} hours&nbsp;
-        {format_milliseconds(time_left, 'SECONDS')} seconds&nbsp;
-        {time_left} milliseconds
+        { params.time_unit === TIME_UNIT.YEARS && `${format_milliseconds(time_left, TIME_UNIT.YEARS)} ${TIME_UNIT.YEARS.toLowerCase()}` }
+        { params.time_unit === TIME_UNIT.DAYS && `${format_milliseconds(time_left, TIME_UNIT.DAYS)} ${TIME_UNIT.DAYS.toLowerCase()}` }
+        { params.time_unit === TIME_UNIT.HOURS && `${format_milliseconds(time_left, TIME_UNIT.HOURS)} ${TIME_UNIT.HOURS.toLowerCase()}` }
+        { params.time_unit === TIME_UNIT.SECONDS && `${format_milliseconds(time_left, TIME_UNIT.SECONDS)} ${TIME_UNIT.SECONDS.toLowerCase()}` }
+        { params.time_unit === TIME_UNIT.MILLISECONDS && `${format_milliseconds(time_left, TIME_UNIT.MILLISECONDS)} ${TIME_UNIT.MILLISECONDS.toLowerCase()}` }
       </span>
     </>
   );
@@ -296,19 +360,21 @@ function calculate_remaining_milliseconds(time) {
 function format_milliseconds(milliseconds, to) {
 
   switch (to) {
-    case 'YEARS':
+    case TIME_UNIT.YEARS:
       return Math.floor(milliseconds / MILLISECONDS_TO_YEARS);
     case 'MONTHS':
       console.warn('Unimplemented');
       return milliseconds;
-    case 'DAYS':
+    case TIME_UNIT.DAYS:
       return Math.floor(milliseconds / MILLISECONDS_TO_DAYS);
-    case 'HOURS':
+    case TIME_UNIT.HOURS:
       return Math.floor(milliseconds / MILLISECONDS_TO_HOURS);
-    case 'MINUTES':
+    case TIME_UNIT.MINUTES:
       return Math.floor(milliseconds / MILLISECONDS_TO_MINUTES);
-    case 'SECONDS':
+    case TIME_UNIT.SECONDS:
       return Math.floor(milliseconds / MILLISECONDS_TO_SECONDS);
+    case TIME_UNIT.MILLISECONDS:
+      return milliseconds;
     default:
       console.warn('Incorrect argument \'to\'');
       return milliseconds;

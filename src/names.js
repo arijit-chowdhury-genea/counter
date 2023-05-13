@@ -1,3 +1,5 @@
+import { capitalize } from './helper';
+
 const names = [
     "James",
     "Robert",
@@ -225,8 +227,4 @@ export function get_default_name() {
     const adjective = adjectives[Math.round(Math.random() * adjectives.length)];
     return `${capitalize(adjective)} ${capitalize(name)}`;
 
-}
-
-function capitalize(str) {
-    return str[0].toUpperCase() + str.slice(1).toLowerCase();
 }
