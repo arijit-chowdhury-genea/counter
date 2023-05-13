@@ -155,11 +155,27 @@ function App() {
 
   return (
     <>
-      <button onClick={add_units}>Add</button>
-      <button onClick={reset}>Clear All</button>
-      <select value={default_time_unit} onChange={on_default_time_unit_change}>
-        <TimeUnitOptions />
-      </select>
+      <div style={{ margin: "5px" }}>
+        <button
+          title='Add a counter'
+          className='btn bg-blue w-3' 
+          onClick={add_units}
+        >
+          <i className="fa-regular fa-plus"></i>
+        </button>
+        &nbsp;
+        <button
+          title='Clear all counters'
+          className='btn bg-red w-3'
+          onClick={reset}
+        >
+          <i className='fa-solid fa-trash'></i>
+        </button>
+        &nbsp;
+        <select value={default_time_unit} onChange={on_default_time_unit_change}>
+          <TimeUnitOptions />
+        </select>
+      </div>
       {render_units()}
     </>
   );
@@ -229,9 +245,13 @@ function SelfContainedUnit(props) {
         <TimeUnitOptions />
       </select>
       &nbsp;
-      <button 
+      <button
+        title={`Delete ${props.name}`}
+        className='btn bg-red w-2'
         onClick={remove}
-      >X</button>
+      >
+        <i className="fa-solid fa-trash"></i>
+      </button>
       <br/>
       <TimeLeft
         id={props.id}
@@ -333,7 +353,16 @@ function TimeLeft(params) {
 
   return (
     <>
-      <button style={{ width: '80px' }} onClick={do_action}>{action}</button>
+      <button
+        className='btn bg-blue w-2'
+        onClick={do_action}
+      >
+        {
+          action === ACTION.PAUSE
+            ? <i className='fa-solid fa-pause'></i>
+            : <i className='fa-solid fa-play'></i>
+        }
+      </button>
       &nbsp;
       <span>
         { params.time_unit === TIME_UNIT.YEARS && `${format_milliseconds(time_left, TIME_UNIT.YEARS)} ${TIME_UNIT.YEARS.toLowerCase()}` }
