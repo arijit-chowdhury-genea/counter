@@ -1,5 +1,29 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import './App.css';
+
+let global_callbacks = [];
+
+function do_the_needful() {
+  for (let i = 0; i < global_callbacks.length; i++) {
+    global_callbacks[i].callback();
+  }
+}
+
+function register_callback({ id, callback }) {
+  const index = global_callbacks.findIndex((elem) => elem.id === id);
+  if (index === -1) {
+    global_callbacks.push({ id, callback });
+  }
+}
+
+function deregister_callback(id) {
+  console.log(global_callbacks, id);
+  global_callbacks = global_callbacks.filter((elem) => elem.id !== id);
+}
+
+let global_timer_id = setInterval(() => {
+  do_the_needful();
+}, 1000);
 
 const year = new Date().getFullYear();
 
@@ -16,101 +40,149 @@ const ACTION = {
 };
 
 function App() {
-
-  const remove_unit = (id) => {
-    let duplicate = [...units];
-    const index = duplicate.findIndex((elem) => id === elem.id);
-    if (index !== -1) {
-      duplicate.splice(index, 1);
-      set_units(duplicate);
-    }
-  }
-
+  
   const [units, set_units] = useState([]);
 
+  const on_time_change = (id, time) => {
+    
+    set_units(
+      units.map((unit) => {
+        if (unit.id !== id) {
+          return unit;
+        } else {
+          return {
+            ...unit,
+            time,
+          };
+        }
+      }),
+    );
+
+  };
+
+  const on_name_change = (id, name) => {
+    
+    set_units(
+      units.map((unit) => {
+        if (unit.id !== id) {
+          return unit;
+        } else {
+          return {
+            ...unit,
+            name,
+          };
+        }
+      }),
+    );
+
+  };
+
+  const remove_unit = (id) => {
+    let new_state = units.filter((item) => item.id !== id);
+    set_units(new_state);
+  }
+
   const add_units = () => {
-
+    let new_state = [];
+    for (let i = 0; i < units.length; i++) {
+      new_state.push({
+        ...units[i],
+      });
+    }
     const id = Date.now();
-    let duplicate = units.concat([{
+    new_state.push({
       id,
-      component: <SelfContainedUnit
-        id={id}
-        key={id}
+      name: 'My Counter',
+      time: get_default_date(),
+    });
+    set_units(new_state);
+  }
+
+  const render_units = useCallback(() => {
+    return units.map(
+      (item) => <SelfContainedUnit
+        id={item.id}
+        key={item.id}
+        name={item.name}
+        time={item.time}
         remove_unit={remove_unit}
+        on_time_change={on_time_change}
+        on_name_change={on_name_change}
       />
-    }]);
-    set_units(duplicate);
+    );
+  }, [units]);
 
-  }
-
-  const render_units = () => {
-    return units.map((item) => item.component);
-  }
-
-  const log = () => {
-    console.log(units);
+  const reset = () => {
+    set_units([]);
   }
 
   return (
     <>
       <button onClick={add_units}>Add</button>
-      <button onClick={log}>Log</button>
+      <button onClick={reset}>Clear All</button>
       {render_units()}
     </>
   );
   
 }
 
-function SelfContainedUnit(params) {
-
-  const [time, set_time] = useState(get_default_date());
-  const [name, set_name] = useState("My Counter");
-
-
+function SelfContainedUnit(props) {
+  
   const on_date_change = (d) => {
-    
     const date = new Date(
       d.target.value + 'Z',
     );
 
     if (!isNaN(date.getTime())) {
 
-      set_time(date);
+      console.log('date changed', 'valid', d.target.value, date);
+      props.on_time_change(
+        props.id,
+        date,
+      );
 
+    } else {
+
+      console.log('date changed', 'invalid', d.target.value, date);
+      
     }
   };
 
   const on_name_change = (e) => {
 
-    set_name(e.target.value)
+    props.on_name_change(
+      props.id,
+      e.target.value,
+    );
 
   }
 
   const remove = () => {
-    params.remove_unit(params.id);
+    props.remove_unit(props.id);
   }
 
   return (
-    <div style={{ position: "relative", padding: "5px", margin: "5px", border: "1px solid black" }}>
+    <div style={{ padding: "5px", margin: "5px", border: "1px solid black" }}>
       <input
         type='text'
-        value={name}
+        value={props.name}
         onChange={on_name_change}
         style={{ border: "none", fontWeight: "bold" }}
       />
       <br/>
+      <span style={{ fontSize: "12px", color: "gray" }}>{props.id}</span>
+      <br/>
       <input 
         type='datetime-local' 
-        value={format_input_time(time)}
+        value={format_input_time(props.time)}
         onChange={on_date_change}
       />
       &nbsp;
       <button 
-        style={{ position: "absolute", top: 0, right: 0 }} 
         onClick={remove}
       >X</button>
       <br/>
-      <TimeLeft time={time} />
+      <TimeLeft id={props.id} time={props.time} />
     </div>
   );
 
@@ -125,13 +197,15 @@ function TimeLeft(params) {
   );
   let timer_id = useRef();
 
+  const callbackRef = () => {
+    set_time_left(calculate_remaining_milliseconds(params.time));
+  };
+
   useEffect(() => {
 
     stop_timer();
 
-    set_time_left(
-      calculate_remaining_milliseconds(params.time),
-    );
+    callbackRef();
 
     start_timer();
 
@@ -151,25 +225,16 @@ function TimeLeft(params) {
 
   const start_timer = () => {
 
-    if (timer_id.current) {
-
-      stop_timer();
-
-    }
-
-    timer_id.current = setInterval(() => {
-
-      set_time_left(
-        calculate_remaining_milliseconds(params.time),
-      );
-
-    }, interval);
+    register_callback({
+      id: params.id,
+      callback: callbackRef,
+    });
 
   };
 
   const stop_timer = () => {
 
-    clearInterval(timer_id.current);
+    deregister_callback(params.id);
 
   }
 
