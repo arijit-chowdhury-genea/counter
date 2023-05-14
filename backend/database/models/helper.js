@@ -30,6 +30,22 @@ class QueryParser {
         )
     }
 
+    replace_columns(pos, values = '*') {
+        this.base_query = this.base_query.replace(
+            `$${pos}`,
+            Array.isArray(values)
+                ? values.join(', ')
+                : values,
+        )
+    }
+
+    replace_uuid(pos, uuid) {
+        this.base_query = this.base_query.replace(
+            `$${pos}`,
+            `'${uuid}'`,
+        );
+    }
+
     as_string() {
         return this.base_query;
     }

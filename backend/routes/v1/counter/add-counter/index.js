@@ -8,10 +8,18 @@ async function request_handler (req, res, next) {
 
         const response = await counter.save();
 
-        return res.status(201).json(response);
+        if (response.is_error === false) {
+
+            return res.status(201).json(response.data);
+
+        }
+
+        next(response.error);
 
     } catch (error) {
         
+        next(error);
+
     }
 
 }
@@ -24,10 +32,10 @@ function validate_request_body(req, res, next) {
 
     if (validation_errors.length > 0) {
 
-        const error = new Error('Validation failed');
+        const error = new Error('Validation failed.');
         error.status = 400;
-        error.fields = validation_errors;
-        throw error;
+        error.description = validation_errors;
+        return next(error);
 
     }
 

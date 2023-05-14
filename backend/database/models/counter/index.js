@@ -1,5 +1,6 @@
-const { client, get_client } = require("../../connection");
+const { get_client } = require("../../connection");
 const insert_query = require("./insert");
+const { find_by_uuid_query } = require("./select");
 
 class CounterModel {
 
@@ -19,23 +20,43 @@ class CounterModel {
     }
 
     async save() {
-        
-        const sql = insert_query(this.name, this.end_date);
 
-        const result = await get_client().query(sql);
+        let response = { is_error: false };
 
-        if (
-            Array.isArray(result.rows) && 
-            result.rows.length === 1
-        ) {
+        try {
 
-            return result.rows[0];
+            const sql_query = insert_query(this.name, this.end_date);
+
+            const result = await get_client().query(sql_query);
+
+            if (result.rows.length === 1) {
+
+                response.is_error = false;
+                response.data = result.rows[0];
+
+            } else {
+
+                response.is_error = true;
+                const error = new Error(
+                    `Unexpected error while inserting record into ` +
+                    `the counter table.`
+                );
+                error.status = 500;
+                response.error = error;
+
+            }
+
+        } catch (error) {
+            
+            response.is_error = true;
+            error.status = 500;
+            response.is_error = error;
+
+        } finally {
+
+            return response;
 
         }
-
-        throw new Error(
-            `Unable to insert into database.`,
-        );
 
     }
 
@@ -118,6 +139,49 @@ function validate_habit_end_date(end_date, errors) {
             property: 'end_date',
             errors: end_date_errors,
         });
+
+    }
+
+}
+
+CounterModel.find_by_uuid = async function(counter_uuid) {
+
+    let response = { is_error: false };
+
+    try {
+
+        const sql_query = find_by_uuid_query(counter_uuid);
+
+        const result = await get_client().query(sql_query);
+
+        if (result.rows.length === 1) {
+
+            response.is_error = false;
+            response.data = result.rows[0];
+
+        } else {
+
+            response.is_error = true;
+            const error = new Error(
+                `Given counter was not found in the database.`
+            );
+            error.status = 404;
+            error.description =
+                `Counter with uuid ${counter_uuid} was not found ` +
+                `in the database.`;
+            response.error = error;
+
+        }
+
+    } catch (error) {
+        
+        response.is_error = true;
+        error.status = 500;
+        response.is_error = error;
+
+    } finally {
+
+        return response;
 
     }
 

@@ -32,6 +32,20 @@ async function add_counter_test() {
 
 };
 
+async function get_counter_test() {
+
+    const response = await axios_instance.get(
+        `/v1/counter/${counter_data.uuid}`,
+    );
+
+    assert.strictEqual(response.status, 200);
+
+    assert.strictEqual(response.data.name, counter_data.name);
+
+    assert.strictEqual(response.data.end_date, counter_data.end_date);
+
+};
+
 async function delete_counter_test() {
 
     const response = await axios_instance.delete(
@@ -42,7 +56,7 @@ async function delete_counter_test() {
 
     assert.strictEqual(response.data.uuid, counter_data.uuid);
 
-}
+};
 
 async function run_counter_suite() {
 
@@ -55,6 +69,11 @@ async function run_counter_suite() {
     await perform_and_log_test(
         'ADD COUNTER TEST',
         add_counter_test,
+    );
+
+    await perform_and_log_test(
+        'GET COUNTER TEST',
+        get_counter_test,
     );
 
     await perform_and_log_test(
