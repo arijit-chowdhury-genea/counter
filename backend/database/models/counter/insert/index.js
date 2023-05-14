@@ -16,4 +16,6 @@ function insert_query(name, end_date, columns_returned = '*') {
 
 }
 
-module.exports = insert_query;
+module.exports = {
+    insert_query,
+};

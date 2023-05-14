@@ -40,6 +40,8 @@ async function get_counter_test() {
 
     assert.strictEqual(response.status, 200);
 
+    assert.strictEqual(response.data.uuid, counter_data.uuid);
+
     assert.strictEqual(response.data.name, counter_data.name);
 
     assert.strictEqual(response.data.end_date, counter_data.end_date);
@@ -55,6 +57,10 @@ async function delete_counter_test() {
     assert.strictEqual(response.status, 200);
 
     assert.strictEqual(response.data.uuid, counter_data.uuid);
+
+    assert.strictEqual(response.data.name, counter_data.name);
+
+    assert.strictEqual(response.data.end_date, counter_data.end_date);
 
 };
 
