@@ -18,7 +18,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev-backend": "node -r dotenv/config ./backend/server"
+    "dev-backend": "node -r dotenv/config ./backend/server",
+    "test-backend": "node -r dotenv/config ./backend/tests/index"
   },
   "eslintConfig": {
     "extends": [
@@ -39,6 +40,7 @@
     ]
   },
   "devDependencies": {
+    "axios": "^1.4.0",
     "dotenv": "^16.0.3",
     "nodemon": "^2.0.22"
   }

@@ -23,10 +23,10 @@ class QueryParser {
         );
     }
 
-    replace_date_time(pos, datetime) {
+    replace_timestamp(pos, timestamp) {
         this.base_query = this.base_query.replace(
             `$${pos}`,
-            `'${datetime}'::datetime`,
+            `'${timestamp}'::timestamp`,
         )
     }
 

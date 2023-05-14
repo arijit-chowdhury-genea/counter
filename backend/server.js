@@ -1,15 +1,13 @@
-const express = require('express');
-const app_router = require('./routes');
-const { connect_to_database } = require('./database/connection');
-
-const app = express();
+const { start_app } = require('./app');
 
 const PORT = process.env.PORT || 5000;
 
-app.use(app_router);
+start_app(PORT)
+    .catch((error) => {
 
-connect_to_database().then();
+        console.error(
+            `Error while starting app.`,
+            error,
+        );
 
-app.listen(PORT, () => {
-    console.log(`Listening at PORT ${PORT}`);
-});
+    });

@@ -1,4 +1,4 @@
-const { client } = require("../../connection");
+const { client, get_client } = require("../../connection");
 const insert_query = require("./insert");
 
 class CounterModel {
@@ -22,9 +22,20 @@ class CounterModel {
         
         const sql = insert_query(this.name, this.end_date);
 
-        const result = await client.query(sql);
+        const result = await get_client().query(sql);
 
-        return result;
+        if (
+            Array.isArray(result.rows) && 
+            result.rows.length === 1
+        ) {
+
+            return result.rows[0];
+
+        }
+
+        throw new Error(
+            `Unable to insert into database.`,
+        );
 
     }
 
@@ -60,7 +71,7 @@ function validate_habit_name(name, errors) {
 
     }
     
-    if (this.REGEX.test(name)) {
+    if (!this.REGEX.test(name)) {
 
         name_errors.push(`Property 'name' can only contain alphanumeric, ' ' and '-' characters.`);
 

@@ -1,5 +1,21 @@
 const { CounterModel } = require("../../../../database/models/counter");
 
+async function request_handler (req, res, next) {
+
+    try {
+
+        const { counter } = req;
+
+        const response = await counter.save();
+
+        return res.status(201).json(response);
+
+    } catch (error) {
+        
+    }
+
+}
+
 function validate_request_body(req, res, next) {
 
     const counter = new CounterModel(req.body);
@@ -18,20 +34,6 @@ function validate_request_body(req, res, next) {
     req.counter = counter;
 
     next();
-
-}
-
-async function request_handler (req, res, next) {
-
-    try {
-
-        const { counter } = req;
-
-        await counter.save();
-
-    } catch (error) {
-        
-    }
 
 }
 

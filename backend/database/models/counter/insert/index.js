@@ -8,7 +8,7 @@ function insert_query(name, end_date) {
 
     query_parser.replace_var_char(1, name);
 
-    query_parser.replace_date_time(2, end_date);
+    query_parser.replace_timestamp(2, end_date);
 
     return query_parser.as_string();
 
