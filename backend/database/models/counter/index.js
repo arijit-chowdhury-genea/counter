@@ -51,7 +51,7 @@ class CounterModel {
             
             response.is_error = true;
             error.status = 500;
-            response.is_error = error;
+            response.error = error;
 
         } finally {
 
@@ -178,7 +178,7 @@ CounterModel.find_by_uuid = async function(counter_uuid) {
         
         response.is_error = true;
         error.status = 500;
-        response.is_error = error;
+        response.error = error;
 
     } finally {
 
@@ -221,7 +221,7 @@ CounterModel.delete_by_uuid = async function(counter_uuid) {
         
         response.is_error = true;
         error.status = 500;
-        response.is_error = error;
+        response.error = error;
 
     } finally {
 
